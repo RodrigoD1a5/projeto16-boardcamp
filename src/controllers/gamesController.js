@@ -2,8 +2,19 @@ import { db } from "../database/database.connection.js";
 import { STATUS_CODE } from "../enums/statusCode.js";
 
 export async function getGames(req, res) {
+
     const games = await db.query('SELECT * FROM games');
-    res.status(STATUS_CODE.OK).send(games.rows);
+
+    try {
+
+        res.status(STATUS_CODE.OK).send(games.rows);
+
+    } catch (error) {
+
+        res.status(STATUS_CODE.SERVER_ERROR).send(error);
+
+    }
+
 }
 
 export async function postGames(req, res) {
