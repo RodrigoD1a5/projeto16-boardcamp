@@ -12,4 +12,4 @@ app.use(json());
 
 app.use(gamesRouter);
 
-app.listen(process.env.PORT, () => console.log(`Servidor conectado na porta ${process.env.PORT}`));
+app.listen(process.env.PORT || 5001, () => console.log(`Servidor conectado na porta ${process.env.PORT}`));
