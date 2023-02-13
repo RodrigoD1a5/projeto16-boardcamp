@@ -7,6 +7,9 @@ export async function postRentals(req, res) {
 
     try {
 
+        const customer = await db.query('SELECT * FROM customers WHERE id = $1', [customerId]);
+        if (customer.rows.length === 0) return res.sendStatus(STATUS_CODE.BAD_REQUEST);
+
         const game = await db.query('SELECT * FROM games WHERE id = $1', [gameId]);
         if (game.rows.length === 0) return res.sendStatus(STATUS_CODE.BAD_REQUEST);
         const pricePerDay = game.rows[0].pricePerDay;
