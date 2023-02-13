@@ -121,3 +121,24 @@ export async function postRentalsReturn(req, res) {
 
     }
 }
+
+export async function deleteRentals(req, res) {
+    const { id } = req.params;
+
+    try {
+
+        const rental = await db.query('SELECT * FROM rentals WHERE id=$1', [id]);
+
+        if (rental.rows.length === 0) return res.sendStatus(STATUS_CODE.NOT_FOUND);
+
+        if (!rental.rows[0].returnDate) return res.sendStatus(STATUS_CODE.BAD_REQUEST);
+
+        await db.query('DELETE FROM rentals WHERE id = $1', [id]);
+
+        res.sendStatus(STATUS_CODE.OK);
+
+    } catch (error) {
+
+        res.status(STATUS_CODE.SERVER_ERROR).send(error);
+    }
+}
