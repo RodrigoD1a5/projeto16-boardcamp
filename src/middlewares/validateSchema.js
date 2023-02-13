@@ -1,4 +1,3 @@
-import { STATUS_CODE } from "../enums/statusCode.js";
 
 export function validateSchema(schema, statusCode) {
     return (req, res, next) => {

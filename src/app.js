@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { gamesRouter } from './routes/gamesRouter.js';
 import { customersRouter } from './routes/customersRouter.js';
+import { rentalsRouter } from './routes/rentalsRouter.js';
 
 dotenv.config();
 
@@ -13,5 +14,6 @@ app.use(json());
 
 app.use(gamesRouter);
 app.use(customersRouter);
+app.use(rentalsRouter);
 
 app.listen(process.env.PORT || 5001, () => console.log(`Servidor conectado na porta ${process.env.PORT}`));
