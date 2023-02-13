@@ -47,3 +47,31 @@ export async function postRentals(req, res) {
 
     }
 }
+
+export async function postRentalsReturn(req, res) {
+    const { id } = req.params;
+
+    try {
+        let delayFee = 0;
+
+        const rental = await db.query('SELECT * FROM rentals WHERE id = $1', [id]);
+        if (rental.rows.length === 0) return res.sendStatus(STATUS_CODE.NOT_FOUND);
+        if (rental.rows[0].returnDate) return res.sendStatus(STATUS_CODE.BAD_REQUEST);
+
+        const checkDate = Math.trunc((new Date().getTime() - new Date(rental.rows[0].rentDate).getTime()) / (3600 * 24 * 1000));
+
+        if (checkDate > rental.rows[0].daysRented) {
+            delayFee = (checkDate - rental.rows[0].daysRented) * rental.rows[0].originalPrice;
+        }
+        console.log(new Date());
+
+        await db.query('UPDATE rentals SET "returnDate"= $1, "delayFee"=$2 WHERE id = $3;', [new Date(), delayFee, id]);
+
+        res.sendStatus(STATUS_CODE.OK);
+
+    } catch (error) {
+
+        res.status(STATUS_CODE.SERVER_ERROR).send(error);
+
+    }
+}
