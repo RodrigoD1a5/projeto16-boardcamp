@@ -51,26 +51,19 @@ export async function postRentals(req, res) {
 export async function getRentals(req, res) {
 
     try {
-        const result = await db.query(`
+        const rentOutOfShape = await db.query(`
           SELECT 
-            rentals.id,
-            rentals."customerId",
-            rentals."gameId",
-            rentals."rentDate",
-            rentals."daysRented",
-            rentals."returnDate",
-            rentals."originalPrice",
-            rentals."delayFee",
-            customers.id AS "customer.id",
-            customers.name AS "customer.name",
-            games.id AS "game.id",
-            games.name AS "game.name"
+            rentals.*,
+            customers.id AS "idCustomer",
+            customers.name AS "nameCustomer",
+            games.id AS "idGame",
+            games.name AS "idName"
           FROM rentals
           INNER JOIN customers ON rentals."customerId" = customers.id
           INNER JOIN games ON rentals."gameId" = games.id
         `);
 
-        const rentals = result.rows.map((r) => {
+        const rentals = rentOutOfShape.rows.map((r) => {
             return {
                 id: r.id,
                 customerId: r.customerId,
@@ -81,17 +74,18 @@ export async function getRentals(req, res) {
                 originalPrice: r.originalPrice,
                 delayFee: r.delayFee,
                 customer: {
-                    id: r["customer.id"],
-                    name: r["customer.name"],
+                    id: r.idCustomer,
+                    name: r.nameCustomer,
                 },
                 game: {
-                    id: r["game.id"],
-                    name: r["game.name"],
+                    id: r.idGame,
+                    name: r.idName,
                 },
             };
         });
 
-        return res.send(rentals);
+        res.status(STATUS_CODE.OK).send(rentals);
+
     } catch (error) {
         console.error(error);
         return res.status(STATUS_CODE.SERVER_ERROR).send(error);
