@@ -25,8 +25,6 @@ export async function postRentals(req, res) {
             daysRented,
             rentDate: dayjs().format("YYYY-MM-DD"),
             originalPrice: daysRented * pricePerDay,
-            returnDate: null,
-            delayFee: null
         };
 
         await db
@@ -36,9 +34,9 @@ export async function postRentals(req, res) {
                     rental.gameId,
                     rental.rentDate,
                     rental.daysRented,
-                    rental.rentDate,
+                    null,
                     rental.originalPrice,
-                    rental.delayFee
+                    null
                 ]);
 
         res.sendStatus(STATUS_CODE.CREATED);
