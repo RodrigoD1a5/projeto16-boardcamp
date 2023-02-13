@@ -48,6 +48,56 @@ export async function postRentals(req, res) {
     }
 }
 
+export async function getRentals(req, res) {
+
+    try {
+        const result = await db.query(`
+          SELECT 
+            rentals.id,
+            rentals."customerId",
+            rentals."gameId",
+            rentals."rentDate",
+            rentals."daysRented",
+            rentals."returnDate",
+            rentals."originalPrice",
+            rentals."delayFee",
+            customers.id AS "customer.id",
+            customers.name AS "customer.name",
+            games.id AS "game.id",
+            games.name AS "game.name"
+          FROM rentals
+          INNER JOIN customers ON rentals."customerId" = customers.id
+          INNER JOIN games ON rentals."gameId" = games.id
+        `);
+
+        const rentals = result.rows.map((r) => {
+            return {
+                id: r.id,
+                customerId: r.customerId,
+                gameId: r.gameId,
+                rentDate: r.rentDate,
+                daysRented: r.daysRented,
+                returnDate: r.returnDate,
+                originalPrice: r.originalPrice,
+                delayFee: r.delayFee,
+                customer: {
+                    id: r["customer.id"],
+                    name: r["customer.name"],
+                },
+                game: {
+                    id: r["game.id"],
+                    name: r["game.name"],
+                },
+            };
+        });
+
+        return res.send(rentals);
+    } catch (error) {
+        console.error(error);
+        return res.status(STATUS_CODE.SERVER_ERROR).send(error);
+    }
+}
+
 export async function postRentalsReturn(req, res) {
     const { id } = req.params;
 
@@ -58,14 +108,16 @@ export async function postRentalsReturn(req, res) {
         if (rental.rows.length === 0) return res.sendStatus(STATUS_CODE.NOT_FOUND);
         if (rental.rows[0].returnDate) return res.sendStatus(STATUS_CODE.BAD_REQUEST);
 
+        const game = await db.query('SELECT * FROM games WHERE id=$1', [rental.rows[0].gameId]);
+
         const checkDate = Math.trunc((new Date().getTime() - new Date(rental.rows[0].rentDate).getTime()) / (3600 * 24 * 1000));
 
         if (checkDate > rental.rows[0].daysRented) {
-            delayFee = (checkDate - rental.rows[0].daysRented) * rental.rows[0].originalPrice;
+            delayFee = (checkDate - rental.rows[0].daysRented) * game.rows[0].pricePerDay;
         }
         console.log(new Date());
 
-        await db.query('UPDATE rentals SET "returnDate"= $1, "delayFee"=$2 WHERE id = $3;', [new Date(), delayFee, id]);
+        await db.query('UPDATE rentals SET "returnDate"= $1, "delayFee"=$2 WHERE id = $3', [new Date(), delayFee, id]);
 
         res.sendStatus(STATUS_CODE.OK);
 
