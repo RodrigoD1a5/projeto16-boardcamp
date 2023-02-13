@@ -29,8 +29,19 @@ export async function postRentals(req, res) {
             delayFee: null
         };
 
+        await db
+            .query('INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") values ($1, $2, $3, $4, $5, $6, $7)',
+                [
+                    rental.customerId,
+                    rental.gameId,
+                    rental.rentDate,
+                    rental.daysRented,
+                    rental.rentDate,
+                    rental.originalPrice,
+                    rental.delayFee
+                ]);
 
-        res.send(rental);
+        res.sendStatus(STATUS_CODE.CREATED);
 
     } catch (error) {
 
