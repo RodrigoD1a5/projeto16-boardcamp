@@ -14,6 +14,10 @@ export async function postRentals(req, res) {
         if (game.rows.length === 0) return res.sendStatus(STATUS_CODE.BAD_REQUEST);
         const pricePerDay = game.rows[0].pricePerDay;
 
+        const rentals = await db.query('SELECT * FROM rentals WHERE "gameId"= $1', [gameId]);
+
+        const gameIsAvailable = rentals.rowCount >= game.rows[0].stockTotal;
+        if (gameIsAvailable) return res.sendStatus(STATUS_CODE.BAD_REQUEST);
 
         const rental = {
             customerId,
